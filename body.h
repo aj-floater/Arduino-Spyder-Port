@@ -3,7 +3,7 @@
 
 #include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/arm.h"
 
-class Body{
+class Spyder{
 public:
     Position position;
     float world_angle;
@@ -13,14 +13,14 @@ public:
     Arm arms[6];
 
     Position walk;
-    float turn, time = 1;
+    float turn, time_to_take;
     bool walking, walk_to_turn, turning, resting;
     bool turn_callibrated;
     int section_number = 0;
 
     float angle;
     
-    Body(){}
+    Spyder(){}
     
     void Init(Position position, float width, float length){
         this->position.x = position.x;
@@ -34,9 +34,9 @@ public:
         // Arm set 1
         SetArmEndPoints(&arms[0], Position(position.x - width/2 - 1, 0, position.z + length/2 +1));
         SetArmEndPoints(&arms[1], Position(position.x - width/2 - 1, 0, position.z + -length/2-1));
-        SetArmEndPoints(&arms[2], Position(position.x + width/2 + 2 , 0, position.z             ));
+        SetArmEndPoints(&arms[2], Position(position.x + width/2 + 1.75 , 0, position.z             ));
         // Arm se 2
-        SetArmEndPoints(&arms[3], Position(position.x - width/2 - 2 , 0, position.z             ));
+        SetArmEndPoints(&arms[3], Position(position.x - width/2 - 1.75 , 0, position.z             ));
         SetArmEndPoints(&arms[4], Position(position.x + width/2 + 1, 0, position.z + -length/2-1));
         SetArmEndPoints(&arms[5], Position(position.x + width/2 + 1, 0, position.z + length/2 +1));
 
@@ -92,9 +92,9 @@ public:
         // Arm set 1
         SetArmRestPoint(&arms[0], Position(position.x - width/2 - 1, 0, position.z + length/2 +1));
         SetArmRestPoint(&arms[1], Position(position.x - width/2 - 1, 0, position.z + -length/2-1));
-        SetArmRestPoint(&arms[2], Position(position.x + width/2 + 2 , 0, position.z             ));
+        SetArmRestPoint(&arms[2], Position(position.x + width/2 + 1.75 , 0, position.z             ));
         // Arm se 2
-        SetArmRestPoint(&arms[3], Position(position.x - width/2 - 2 , 0, position.z             ));
+        SetArmRestPoint(&arms[3], Position(position.x - width/2 - 1.75 , 0, position.z             ));
         SetArmRestPoint(&arms[4], Position(position.x + width/2 + 1, 0, position.z + -length/2-1));
         SetArmRestPoint(&arms[5], Position(position.x + width/2 + 1, 0, position.z + length/2 +1));
 
@@ -105,19 +105,19 @@ public:
         if (all_stopped && walking){
             if (section_number == 0){
                 for (int i = 0; i < 3; i++){
-                    arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x + walk.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z + walk.z), time, true);
+                    arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x + walk.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z + walk.z), time_to_take, true);
                 }
                 for (int i = 3; i < 6; i++){
-                    arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x - walk.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z - walk.z), time, false);
+                    arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x - walk.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z - walk.z), time_to_take, false);
                 }
                 section_number = 1;
             }
             else if (section_number == 1){
                 for (int i = 3; i < 6; i++){
-                    arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x + walk.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z + walk.z), time, true);
+                    arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x + walk.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z + walk.z), time_to_take, true);
                 }
                 for (int i = 0; i < 3; i++){
-                    arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x - walk.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z - walk.z), time, false);
+                    arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x - walk.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z - walk.z), time_to_take, false);
                 }
                 section_number = 0;
             }
@@ -125,10 +125,10 @@ public:
         if (all_stopped && walk_to_turn){
             if (section_number == 0){
                 for (int i = 0; i < 3; i++){
-                    arms[i].MoveEndPositionTo(Position(arms[i].radius * cosf(arms[i].rest_angle - turn), arms[i].end_rest_point.y, arms[i].radius * sinf(arms[i].rest_angle - turn)), time, false);
+                    arms[i].MoveEndPositionTo(Position(arms[i].radius * cosf(arms[i].rest_angle - turn), arms[i].end_rest_point.y, arms[i].radius * sinf(arms[i].rest_angle - turn)), time_to_take, false);
                 }
                 for (int i = 3; i < 6; i++){
-                    arms[i].MoveEndPositionTo(Position(arms[i].radius * cosf(arms[i].rest_angle + turn), arms[i].end_rest_point.y, arms[i].radius * sinf(arms[i].rest_angle + turn)), time, true);
+                    arms[i].MoveEndPositionTo(Position(arms[i].radius * cosf(arms[i].rest_angle + turn), arms[i].end_rest_point.y, arms[i].radius * sinf(arms[i].rest_angle + turn)), time_to_take, true);
                 }
                 section_number = 1;
             }
@@ -141,19 +141,19 @@ public:
         if (all_stopped && turning){
             if (section_number == 0){
                 for (int i = 0; i < 3; i++){
-                    arms[i].MoveEndPositionAroundPointAtAngle(&position, arms[i].rest_angle + turn, time, i, true);
+                    arms[i].MoveEndPositionAroundPointAtAngle(&position, arms[i].rest_angle + turn, time_to_take, i, true);
                 }
                 for (int i = 3; i < 6; i++){
-                    arms[i].MoveEndPositionAroundPointAtAngle(&position, arms[i].rest_angle - turn, time, i, false);
+                    arms[i].MoveEndPositionAroundPointAtAngle(&position, arms[i].rest_angle - turn, time_to_take, i, false);
                 }
                 section_number = 1;
             }
             else if (section_number == 1){
                 for (int i = 3; i < 6; i++){
-                    arms[i].MoveEndPositionAroundPointAtAngle(&position, arms[i].rest_angle + turn, time, i, true);
+                    arms[i].MoveEndPositionAroundPointAtAngle(&position, arms[i].rest_angle + turn, time_to_take, i, true);
                 }
                 for (int i = 0; i < 3; i++){
-                    arms[i].MoveEndPositionAroundPointAtAngle(&position, arms[i].rest_angle - turn, time, i, false);
+                    arms[i].MoveEndPositionAroundPointAtAngle(&position, arms[i].rest_angle - turn, time_to_take, i, false);
                 }
                 section_number = 0;
             }

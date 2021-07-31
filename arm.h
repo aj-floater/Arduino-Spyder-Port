@@ -91,7 +91,7 @@ public:
 
         if (apply_ground_offset){
             float time = distance/speed;
-            float height = 1;
+            float height = 0.75;
             float y = height * sinf(y_offset_angle);
             y_offset_angle += M_PI/time * delta_time;
             end_point.y = y;
