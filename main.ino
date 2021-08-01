@@ -1,5 +1,5 @@
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/customservo.ino"
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/controller.h"
+#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\translator.ino"
+#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\controller.h"
 
 #define spyder sim.spyder
 

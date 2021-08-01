@@ -1,11 +1,11 @@
 #ifndef CUSTOMSERVO_H
 #define CUSTOMSERVO_H
 
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/position.h"
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/arm.h"
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/body.h"
+#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\position.h"
+#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\arm.h"
+#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\body.h"
 
-#include <ServoEasing.h>
+#include "C:\Users\arjam\Documents\Arduino\libraries\ServoEasing\src\ServoEasing.h"
 
 class CustomServo {
 public:
