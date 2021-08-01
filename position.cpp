@@ -1,4 +1,4 @@
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/position.h"
+#include "position.h"
 
 float Length(Position A){
     return sqrt(A.x * A.x + A.y * A.y + A.z * A.z);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/position.h"
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/body.h"
+#include "position.h"
+#include "body.h"
 
 #include <SoftwareSerial.h>
 

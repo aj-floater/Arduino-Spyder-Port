@@ -1,5 +1,7 @@
-#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\translator.ino"
-#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\controller.h"
+#include "translator.h"
+#include "controller.h"
+
+#include <Arduino.h>
 
 #define spyder sim.spyder
 
@@ -16,11 +18,6 @@ float CalculateDeltaTime(){
     float delta_time = currentTime - previousTime;
     previousTime = currentTime;
     return delta_time;
-}
-
-int Degrees(float radians){
-    int degrees = radians * 180/PI;
-    return degrees;
 }
 
 float delta_time;

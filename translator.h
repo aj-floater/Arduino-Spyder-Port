@@ -5,7 +5,7 @@
 #include "C:\Users\arjam\Gits\Arduino-Spyder-Port\arm.h"
 #include "C:\Users\arjam\Gits\Arduino-Spyder-Port\body.h"
 
-#include "C:\Users\arjam\Documents\Arduino\libraries\ServoEasing\src\ServoEasing.h"
+#include <ServoEasing.h>
 
 class CustomServo {
 public:
@@ -27,6 +27,10 @@ public:
 
 class SimulationToArduinoTranslator {
 private:
+    int Degrees(float radians){
+        int degrees = radians * 180/M_PI;
+        return degrees;
+    }
     void SetOffsetAngles() {
         servos[0].offset_angle = 130;
         servos[1].offset_angle = 140;

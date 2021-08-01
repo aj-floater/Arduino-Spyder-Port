@@ -1,7 +1,7 @@
 #ifndef ARM_H
 #define ARM_H
 
-#include "/Users/archiejames/Desktop/Coding/Arduino Spyder Port/position.h"
+#include "position.h"
 
 enum MovementType {
     STRAIGHT,
