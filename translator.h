@@ -1,10 +1,11 @@
 #ifndef CUSTOMSERVO_H
 #define CUSTOMSERVO_H
 
-#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\position.h"
-#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\arm.h"
-#include "C:\Users\arjam\Gits\Arduino-Spyder-Port\body.h"
+#include "position.h"
+#include "arm.h"
+#include "body.h"
 
+#include <Arduino.h>
 #include <ServoEasing.h>
 
 class CustomServo {
@@ -102,9 +103,8 @@ private:
             delay(150);
         }
 
-        for (int i = 0; i < 18; i++){
-            servos[i].servo.setSpeed(180);
-        }
+        for (int i = 0; i < 18; i++)
+            servos[i].servo.setSpeed(130);
 
         EaseUpdateLegs();
     }

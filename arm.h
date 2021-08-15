@@ -122,11 +122,11 @@ public:
         end_angle = angle;
         if (smallest_angle < 0){
             direction_angle = -1;
-            distance = abs(smallest_angle);
+            distance = fabs(smallest_angle);
         }
         if (smallest_angle > 0){
             direction_angle = 1;
-            distance = abs(smallest_angle);
+            distance = fabs(smallest_angle);
         }
         this->speed = distance/time;
         this->ID = ID; 
@@ -142,8 +142,8 @@ public:
         end_point.z = radius * sin(start_angle);
 
         if (apply_ground_offset){
-            float time = abs(distance)/speed;
-            float height = 0.5;
+            float time = fabs(distance)/speed;
+            float height = 0.75;
             float y = height * sinf(y_offset_angle);
             y_offset_angle += M_PI/time * delta_time;
             end_point.y = y;

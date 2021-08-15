@@ -4,6 +4,7 @@
 #include "body.h"
 
 #include <SoftwareSerial.h>
+#include <Arduino.h>
 
 struct Joystick{
     float x, z, angle, radius;
@@ -21,18 +22,13 @@ struct Timer {
 class Controller{
     Timer joystick_idle;
     bool turn_callibrated, height_change, walk_to_turn;
-    float axes[4];
 
-    const byte numChars = 32;
-    char receivedChars[(byte)32];
+    const byte numChars = 20;
+    char receivedChars[20];
     bool newData = false;
 
-    void StoreAxesData(){
-        left_joystick.x = axes[0];
-        left_joystick.z = axes[1];
-        right_joystick.x = axes[2];
-        right_joystick.z = axes[3];
-    }
+    char state;
+
     void CalculateJoystickAngles(){
         left_joystick.angle = atan2(left_joystick.z, left_joystick.x);
         right_joystick.angle = atan2(right_joystick.z, right_joystick.x);
@@ -41,23 +37,39 @@ class Controller{
         left_joystick.radius = sqrt(pow(left_joystick.x,2) + pow(left_joystick.z,2));
         right_joystick.radius = sqrt(pow(right_joystick.x,2) + pow(right_joystick.z,2));
     }
-    bool JoystickMovementEratic(Joystick *joystick){
-        float distance_travelled = sqrt(pow(joystick->previous_x - joystick->x, 2) + pow(joystick->previous_z - joystick->z, 2));
-        joystick->previous_x = joystick->x;
-        joystick->previous_z = joystick->z;
-        if (distance_travelled > 0.5) return true;
-        else return false;
+    float TransformModifiedSerialData(const char *receivedData, int start_pos){
+        char temp_data[4];
+        for (int i = start_pos; i < start_pos + 4; i++){
+            temp_data[i-start_pos] = receivedData[i];
+        }
+        float data = atoi(temp_data);
+        data = data / 100;
+        return data;
     }
+    void ProcessSerialData() {
+        if (newData == true) {
+            // Serial.println(TransformModifiedSerialData(receivedChars, 0));
+            left_joystick.x = TransformModifiedSerialData(receivedChars, 0);
+            left_joystick.z = TransformModifiedSerialData(receivedChars, 4);
+            right_joystick.x = TransformModifiedSerialData(receivedChars, 8);
+            right_joystick.z = TransformModifiedSerialData(receivedChars, 12);
 
-    void RecieveSerialData(SoftwareSerial* HM10) {
+            state = receivedChars[16];
+
+            Serial.println(String(left_joystick.x)+' '+String(left_joystick.z)+' '+String(right_joystick.x)+' '+String(right_joystick.z));
+
+            newData = false;
+        }
+    }
+    void RecieveSerialData() {
         static bool recvInProgress = false;
         static byte ndx = 0;
         char startMarker = '<';
         char endMarker = '>';
         char rc;
     
-        while (HM10->available() > 0 && newData == false) {
-            rc = HM10->read();
+        while (Serial2.available() > 0 && newData == false) {
+            rc = Serial2.read();
 
             if (recvInProgress == true) {
                 if (rc != endMarker) {
@@ -73,31 +85,22 @@ class Controller{
                     ndx = 0;
                     newData = true;
                 }
+                digitalWrite(LED_BUILTIN, HIGH);
             }
 
             else if (rc == startMarker) {
                 recvInProgress = true;
             }
-        }
-    }
-    void ProcessSerialData() {
-        if (newData == true) {
-            String recievedData = String(receivedChars);
-            Serial.print("processing");
-            Serial.println(recievedData);
-            int previousSubstring = 0;
-            int pointer = 0;
-            for (int i = 0; i < recievedData.length(); i++){
-                if (recievedData.charAt(i) == ':'){
-                    String substring = recievedData.substring(previousSubstring, i-1);
-                    previousSubstring = i + 1;
-
-                    axes[pointer] = substring.toFloat();
-                    pointer++;
-                }
+            else {
+                digitalWrite(LED_BUILTIN, LOW);
             }
-            newData = false;
         }
+        // if (!Serial2.available()){
+        //     left_joystick.x =  0;
+        //     left_joystick.z =  0;
+        //     right_joystick.x = 0;
+        //     right_joystick.z = 0;
+        // }
     }
 public:
     Joystick left_joystick, right_joystick;
@@ -105,16 +108,16 @@ public:
     Controller(){
 
     }
-    void ProcessInput(SoftwareSerial* HM10){
-        RecieveSerialData(HM10);
+    void ProcessInput(){
+        RecieveSerialData();
         ProcessSerialData();
-        StoreAxesData();
+        // Serial.println('[' + String(left_joystick.x) + ' ' + String(left_joystick.z) + ' ' + String(right_joystick.x) + ' ' + String(right_joystick.z) + ']');
 
         CalculateJoystickAngles();
         CalculateJoystickDistanceFromCenter();
     }
-    void SendInputToBody(Spyder *body, float delta_time){
-        if (left_joystick.radius > 0.2 && !body->turning && !body->resting && !body->walk_to_turn && !JoystickMovementEratic(&left_joystick)){
+    void movementInput(Spyder *body, float delta_time) {
+        if (left_joystick.radius > 0.4 && !body->turning && !body->resting && !body->walk_to_turn){
             body->walking = true;
 
             body->time_to_take = 0.5 / left_joystick.radius;
@@ -123,18 +126,10 @@ public:
             body->walk.x = left_joystick.x/2;
             body->walk.z = left_joystick.z/2;
 
-            Position direction = Normalize((body->position + body->walk) - body->position);
-
-            float x = -direction.x * abs(body->walk.x)/body->time_to_take * delta_time;
-            float z = -direction.z * abs(body->walk.z)/body->time_to_take * delta_time;
-
-            float world_radius = sqrt(pow(x, 2) + pow(z, 2));
-            float angle = atan2(z, x) + body->world_angle;
-
             joystick_idle.start_time = 0;
             body->turn_callibrated = false;
         }
-        else if (abs(right_joystick.x) > 0.2 && !body->walking && !body->resting && !JoystickMovementEratic(&right_joystick)){
+        else if (abs(right_joystick.x) > 0.4 && !body->walking && !body->resting){
             if (!body->turn_callibrated) {
                 body->walk_to_turn = true;
                 if (!walk_to_turn) {
@@ -155,6 +150,12 @@ public:
 
             joystick_idle.start_time = 0;
         }
+        else if (abs(right_joystick.z) > 0.4 && !body->turning){
+            if (right_joystick.z < 0.4)
+                if (body->position.y < 2.1) body->position.y -= right_joystick.z * 0.02;
+            if (right_joystick.z > 0.4)
+                if (body->position.y > 0) body->position.y -= right_joystick.z * 0.02;
+        }
         else {
             body->walking = false;
             body->turning = false;
@@ -162,7 +163,7 @@ public:
             if (joystick_idle.start_time == 0){
                 joystick_idle.start_time = millis();
             }
-            if (joystick_idle.GetTimer(millis()) > 1000){
+            if (joystick_idle.GetTimer(millis()) > 2000){
                 joystick_idle.start_time = -1;
                 body->resting = true;
             }
@@ -172,5 +173,23 @@ public:
 
             body->turn_callibrated = false;
         }
+    }
+    void SendInputToBody(Spyder *body, float delta_time){
+        if (state == 'm'){
+            movementInput(body, delta_time);
+        }
+        if (state == 'r'){
+            if (right_joystick.radius > 0.4 && !body->turning && !body->resting && !body->walk_to_turn){
+                if (right_joystick.x < 0.55)
+                    if (body->x_rotation < 2.1) body->x_rotation -= right_joystick.x * 0.015;
+                if (right_joystick.x > -0.55)
+                    if (body->x_rotation > 0) body->x_rotation -= right_joystick.x * 0.015;
+                if (right_joystick.z < 0.26)
+                    if (body->z_rotation < 2.1) body->z_rotation -= right_joystick.z * 0.015;
+                if (right_joystick.z > -0.26)
+                    if (body->z_rotation > 0) body->z_rotation -= right_joystick.z * 0.015;
+            }
+        }
+        
     }
 };

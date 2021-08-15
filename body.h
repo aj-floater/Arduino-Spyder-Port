@@ -8,12 +8,12 @@ public:
     Position position;
     float world_angle;
 
-    float x_rotation, z_rotation;
+    float x_rotation = 0, z_rotation = 0;
     float width, length;
     Arm arms[6];
 
     Position walk;
-    float turn, time_to_take;
+    float turn, time_to_take, rest_time;
     bool walking, walk_to_turn, turning, resting;
     bool turn_callibrated;
     int section_number = 0;
@@ -32,13 +32,13 @@ public:
 
         for (int i = 0; i < 6; i++) arms[i].Init(Position(0, 0, 0), Position(0, 0, 0), 0.5, 1, 1.5);
         // Arm set 1
-        SetArmEndPoints(&arms[0], Position(position.x - width/2 - 1, 0, position.z + length/2 +1));
-        SetArmEndPoints(&arms[1], Position(position.x - width/2 - 1, 0, position.z + -length/2-1));
-        SetArmEndPoints(&arms[2], Position(position.x + width/2 + 1.75 , 0, position.z             ));
-        // Arm se 2
-        SetArmEndPoints(&arms[3], Position(position.x - width/2 - 1.75 , 0, position.z             ));
-        SetArmEndPoints(&arms[4], Position(position.x + width/2 + 1, 0, position.z + -length/2-1));
-        SetArmEndPoints(&arms[5], Position(position.x + width/2 + 1, 0, position.z + length/2 +1));
+        SetArmEndPoints(&arms[0], Position(position.x - width/2 - 1,        0, position.z + length/2 +1));
+        SetArmEndPoints(&arms[1], Position(position.x - width/2 - 1,        0, position.z + -length/2-1));
+        SetArmEndPoints(&arms[2], Position(position.x + width/2 + 1.5 ,    0, position.z             ));
+        // Arm set 2
+        SetArmEndPoints(&arms[3], Position(position.x - width/2 - 1.5 ,    0, position.z             ));
+        SetArmEndPoints(&arms[4], Position(position.x + width/2 + 1,        0, position.z + -length/2-1));
+        SetArmEndPoints(&arms[5], Position(position.x + width/2 + 1,        0, position.z + length/2 +1));
 
         for (int i = 0; i < 6; i++) {
             arms[i].rest_angle = atan2(arms[i].end_point.z - position.z, arms[i].end_point.x - position.x);
@@ -90,13 +90,13 @@ public:
         SetArmStartPoint(&arms[5], Position(position.x + width/2-0.25,  position.y, position.z + length/2 ));
 
         // Arm set 1
-        SetArmRestPoint(&arms[0], Position(position.x - width/2 - 1, 0, position.z + length/2 +1));
-        SetArmRestPoint(&arms[1], Position(position.x - width/2 - 1, 0, position.z + -length/2-1));
-        SetArmRestPoint(&arms[2], Position(position.x + width/2 + 1.75 , 0, position.z             ));
-        // Arm se 2
-        SetArmRestPoint(&arms[3], Position(position.x - width/2 - 1.75 , 0, position.z             ));
-        SetArmRestPoint(&arms[4], Position(position.x + width/2 + 1, 0, position.z + -length/2-1));
-        SetArmRestPoint(&arms[5], Position(position.x + width/2 + 1, 0, position.z + length/2 +1));
+        SetArmRestPoint(&arms[0], Position(position.x - width/2 - 1,        0, position.z + length/2 +1));
+        SetArmRestPoint(&arms[1], Position(position.x - width/2 - 1,        0, position.z + -length/2-1));
+        SetArmRestPoint(&arms[2], Position(position.x + width/2 + 1.5 ,    0, position.z             ));
+        // Arm set 2
+        SetArmRestPoint(&arms[3], Position(position.x - width/2 - 1.5 ,    0, position.z             ));
+        SetArmRestPoint(&arms[4], Position(position.x + width/2 + 1,        0, position.z + -length/2-1));
+        SetArmRestPoint(&arms[5], Position(position.x + width/2 + 1,        0, position.z + length/2 +1));
 
         bool all_stopped = true;
         for (int i = 0; i < 6; i++){
@@ -166,38 +166,13 @@ public:
             if (!rested){
                 if (section_number == 0){
                     for (int i = 0; i < 3; i++){
-                        arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z), 0.5, true);
+                        arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z), rest_time, true);
                     }
                     section_number = 1;
                 }
                 else if (section_number == 1){
                     for (int i = 3; i < 6; i++){
-                        arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z), 0.5, true);
-                    }
-                    section_number = 0;
-                }
-            }
-            if (rested){
-                resting = false;
-                section_number = 0;
-            }
-        }
-
-        if (all_stopped && resting){
-            bool rested = true;
-            for (int i = 0; i < 6; i++){
-                if (Distance(arms[i].end_rest_point, arms[i].end_point) > 0) rested = false;
-            }
-            if (!rested){
-                if (section_number == 0){
-                    for (int i = 0; i < 3; i++){
-                        arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z), 0.5, true);
-                    }
-                    section_number = 1;
-                }
-                else if (section_number == 1){
-                    for (int i = 3; i < 6; i++){
-                        arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z), 0.5, true);
+                        arms[i].MoveEndPositionTo(Position(arms[i].end_rest_point.x, arms[i].end_rest_point.y, arms[i].end_rest_point.z), rest_time, true);
                     }
                     section_number = 0;
                 }
