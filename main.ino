@@ -29,13 +29,13 @@ void setup (){
     Serial.begin(9600);
     Serial.println("SPYDER ROBOT STARTING...");
 
-    // sim.Init();
+    sim.Init();
 
-    // while (spyder.position.y < 0.9) {
-    //     spyder.position.y += 0.005;
-    //     spyder.Update(delta_time);
-    //     sim.UpdateLegs();
-    // }
+    while (spyder.position.y < 0.9) {
+        spyder.position.y += 0.005;
+        spyder.Update(delta_time);
+        sim.UpdateLegs();
+    }
 
     delay(500);
 
@@ -43,21 +43,21 @@ void setup (){
 }
 
 void loop () {
-    // delta_time = CalculateDeltaTime();
-    // spyder.Update(delta_time);
+    delta_time = CalculateDeltaTime();
+    spyder.Update(delta_time);
 
-    // for (int i = 0; i < 18; i++){
-    //     if (!sim.servos[i].servo.attached()){
-    //         Serial.println("attatching dettached servo");
-    //         sim.servos[i].servo.attach(sim.servos[i].pin);
-    //     }
-    // }
+    for (int i = 0; i < 18; i++){
+        if (!sim.servos[i].servo.attached()){
+            Serial.println("attatching dettached servo");
+            sim.servos[i].servo.attach(sim.servos[i].pin);
+        }
+    }
 
     while(HM10.available() > 0)
         Serial.write(HM10.readString().c_str());
 
-    // controller.ProcessInput(&HM10);
-    // controller.SendInputToBody(&spyder, delta_time);
+    controller.ProcessInput(&HM10);
+    controller.SendInputToBody(&spyder, delta_time);
 
-    // sim.UpdateLegs();
+    sim.UpdateLegs();
 }
